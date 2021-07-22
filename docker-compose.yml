@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  postgis:
+    build:
+      context: ./
+      dockerfile: ./Dockerfiles/Dockerfile_postgis
+    image: dwh_postgis_img
+    container_name: dwh_postgis_cont
+    restart: always
+    ports:
+      - "5445:5432"
+    secrets:
+      - postgresql_user
+      - postgresql_password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgresql_password
+      POSTGRES_USER_FILE: /run/secrets/postgresql_user
+    volumes:
+      - "public_dwh:/var/lib/postgresql/data"
+
+  pgadmin4:
+    build: 
+      context: ./
+      dockerfile: ./Dockerfiles/Dockerfile_pgadmin4
+    image: dwh_pgadmin4_img
+    container_name: dwh_pgadmin4_cont
+    depends_on:
+      - postgis
+    environment:
+      PGADMIN_DEFAULT_EMAIL_FILE: /run/secrets/pgadmin_email
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin_password
+    ports:
+      - "5678:80"
+    secrets:
+      - pgadmin_email
+      - pgadmin_password
+    volumes:
+      - public_dwh_admin:/var/lib/pgadmin
+
+  # superset:
+  #   image: apache/superset:pr-15413
+  #   restart: always
+  #   depends_on:
+  #     - postgres
+
+volumes:
+  public_dwh:
+  public_dwh_admin:
+
+secrets:
+  postgresql_user:
+    file: ./secrets/postgresql_user.txt
+  postgresql_password:
+    file: ./secrets/postgresql_password.txt
+  pgadmin_email:
+    file: ./secrets/pgadmin_email.txt
+  pgadmin_password:
+    file: ./secrets/pgadmin_password.txt
