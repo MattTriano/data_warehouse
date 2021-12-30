@@ -27,6 +27,7 @@ services:
       dockerfile: ./Dockerfiles/Dockerfile_pgadmin4
     image: dwh_pgadmin4_img
     container_name: dwh_pgadmin4_cont
+    restart: always
     depends_on:
       - postgis
     environment:
