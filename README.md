@@ -1,4 +1,4 @@
-# Starding up the system
+# Starting up the system
 
 From the project root dir, you can build the image via `$ docker-compose build`, then you can start up the containers via `$ docker-compose up -d` (`-d` detaches, so you can still have that terminal and you don't have to worry about accidentally shutting things down via ctrl+c).
 
@@ -18,3 +18,12 @@ In the interface that pops up,
 	1. **Username**: enter the database user name
 
 Then click save. If things work, you should be good to go.
+
+## Updating the build
+
+From the command line, go to the project directory containing the **docker-compose.yml** file and enter command `docker-compose down` if `docker ps` shows the app is already running. Then, enter command `docker-compose build`. Then start it back up via `docker-compose up`.
+
+## Accessing `psql` in a running container
+
+The connection command will have the form
+`\$ docker exec -ti NAME_OF_CONTAINER psql -U YOUR_POSTGRES_USERNAME NAME_OF_DB`
