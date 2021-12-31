@@ -1,2 +1,4 @@
 /secrets
 .ipynb_checkpoints
+credentials.yml
+/notebooks/
