@@ -5,10 +5,10 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  build: 
-    context: ./
-    dockerfile: ./Dockerfiles/Dockerfile_airflow
-#   image: dwh_airflow_img
+  image: apache/airflow:2.2.3-python3.9
+  #   build: 
+  #     context: ./
+  #     dockerfile: ./Dockerfiles/Dockerfile_airflow  
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -64,7 +64,7 @@ services:
       POSTGRES_USER_FILE: /run/secrets/postgresql_user
       POSTGRES_DB_FILE: /run/secrets/postgresql_db
     volumes:
-      - "public_dwh:/var/lib/postgresql/data"
+      - public_dwh:/var/lib/postgresql/data
 
   pgadmin4:
     build: 
@@ -100,22 +100,52 @@ services:
       timeout: 30s
       retries: 50
     restart: always
-    
+  
   airflow-webserver:
-    <<: *airflow-common
-    command: webserver
+    build: 
+      context: ./
+      dockerfile: ./Dockerfiles/Dockerfile_airflow
+    image: dwh_airflow_img
+    env_file:
+      - .env
     ports:
-      - "8080:8080"
+      - 8080:8080
+    command: webserver
+    volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    restart: always
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+  
+#   airflow-webserver:
+#     <<: *airflow-common
+#     command: webserver
+#     ports:
+#       - "8080:8080"
+#     healthcheck:
+#       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+#       interval: 10s
+#       timeout: 10s
+#       retries: 5
+#     restart: always
+#     depends_on:
+#       <<: *airflow-common-depends-on
+#       airflow-init:
+#         condition: service_completed_successfully
+
+#   airflow-scheduler:
+#     build: 
+#       context: ./
+#       dockerfile: ./Dockerfiles/Dockerfile_airflow
+#     image: dwh_airflow_img
 
   airflow-scheduler:
     <<: *airflow-common
@@ -176,6 +206,8 @@ services:
         function ver() {
           printf "%04d%04d%04d%04d" $${1//./ }
         }
+        echo "AIRFLOW__CORE__SQL_ALCHEMY_CONN_FILE"
+        printf '%s' ${AIRFLOW__CORE__SQL_ALCHEMY_CONN_FILE}
         airflow_version=$$(gosu airflow airflow version)
         airflow_version_comparable=$$(ver $${airflow_version})
         min_airflow_version=2.2.0
@@ -272,10 +304,17 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+
+networks:
+  dwh_network:
+
 volumes:
   public_dwh:
   public_dwh_admin:
-
+  dwh_airflow_dags:
+  dwh_airflow_logs:
+  dwh_airflow_plugins:
+  
 secrets:
   postgresql_user:
     file: ./secrets/postgresql_user.txt
