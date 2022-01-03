@@ -26,4 +26,12 @@ From the command line, go to the project directory containing the **docker-compo
 ## Accessing `psql` in a running container
 
 The connection command will have the form
-`\$ docker exec -ti NAME_OF_CONTAINER psql -U YOUR_POSTGRES_USERNAME NAME_OF_DB`
+```{bash}
+\$ docker exec -ti NAME_OF_CONTAINER psql -U YOUR_POSTGRES_USERNAME NAME_OF_DB
+```
+
+## Resources
+
+### Airflow
+
+* [Airflow concepts](https://airflow.apache.org/docs/apache-airflow/stable/concepts/overview.html)
