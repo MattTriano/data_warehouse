@@ -1,0 +1,9 @@
+FROM apache/airflow:2.2.3-python3.9
+# COPY ./entrypoints/entrypoint_airflow_prod.sh entrypoint_airflow_prod.sh
+
+# USER root
+# RUN ["chmod", "+x", "entrypoint_airflow_prod.sh"]
+# USER airflow
+
+# ENTRYPOINT ["./entrypoint_airflow_prod.sh"]
+# CMD ["default"]
